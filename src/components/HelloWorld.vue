@@ -1,148 +1,194 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-pwa"
-          target="_blank"
-          rel="noopener"
-          >pwa</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router"
-          target="_blank"
-          rel="noopener"
-          >router</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex"
-          target="_blank"
-          rel="noopener"
-          >vuex</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript"
-          target="_blank"
-          rel="noopener"
-          >typescript</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
+  <div class="mt-5">
+    <form class="ml-5 mr-5">
+      <div class="custom-grid">
+        <label for="from_stations">
+          Gare de départ
+          <select
+            @change="onChangeDeparture"
+            :disabled="!isDepartureReady"
+            :aria-busy="!isDepartureReady"
+            v-model="departure"
+            id="from_stations"
+          >
+            <option value="" disabled selected>Départ...</option>
+            <option
+              v-for="station in departureStations"
+              v-bind:key="station"
+              :value="station"
+            >
+              {{ titleCaseGare(station) }}
+            </option>
+          </select>
+        </label>
+        <label for="to_stations">
+          Gare d'arrivée
+          <select
+            :disabled="!isArrivalReady"
+            v-model="arrival"
+            id="to_stations"
+          >
+            <option value="" disabled selected>Arrivée...</option>
+            <option
+              v-for="station in arrivalStations"
+              v-bind:key="station"
+              :value="station"
+            >
+              {{ titleCaseGare(station) }}
+            </option>
+          </select>
+        </label>
+      </div>
+      <div class="custom-grid mt-5">
+        <label for="date">
+          A partir de
+          <input type="date" id="date" name="date" v-model="from_date" />
+        </label>
+        <label for="departure_hour">
+          &#8203;
+          <select id="departure_hour">
+            <option :value="currentTime" selected>
+              {{ currentTime.label_time }}
+            </option>
+            <option disabled></option>
+            <option v-for="hour in hours" v-bind:key="hour">
+              {{ hour.label }}
+            </option>
+          </select>
+        </label>
+      </div>
+      <div class="grid">
+        <span></span>
+        <button :aria-busy="isSearchLoading" @click="onClickSearch">
+          Rechercher...
+        </button>
+        <span></span>
+      </div>
+    </form>
+    <hr />
+    <article v-for="journey in journeys" v-bind:key="journey.id">
+      <header>{{ journey.date }} - {{ journey.heure_depart }}</header>
+      {{ journey.train_no }}
+      <footer>{{ journey.od_happy_card }}</footer>
+    </article>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { mapGetters } from "vuex";
+import store from "../store";
+import { titleCaseGare } from "../utils/title-case.utils";
+import dayjs from "dayjs";
+import { APIv2QueryParams } from "@/models/query_params";
+
+const padStringZero = (value: number, padding: number) => {
+  return String(value).padStart(padding, "0");
+};
+
+const formatDateFromHoursAndMinutes = (hours: number, minutes: number) => {
+  return `${hours}h${padStringZero(minutes, 2)}`;
+};
+
+const formatDate = (date: Date) => {
+  return dayjs(date).format("YYYY-MM-DD");
+};
+
+const formatTime = (time: Date) => {
+  return `${dayjs(time).format("H")}h${dayjs(time).format("mm")}`;
+};
 
 export default defineComponent({
   name: "HelloWorld",
   props: {
     msg: String,
   },
+  mounted() {
+    store.dispatch("getDepartureStations").then(() => {
+      this.isDepartureReady = true;
+    });
+  },
+  data() {
+    return {
+      isDepartureReady: false,
+      isArrivalReady: false,
+      isSearchLoading: false,
+      departure: "",
+      arrival: "",
+      from_date: "",
+    };
+  },
+  computed: {
+    ...mapGetters({
+      departureStations: "getDepartureStations",
+      arrivalStations: "getArrivalStations",
+      journeys: "getJourneys",
+    }),
+    titleCaseGare: function () {
+      return titleCaseGare;
+    },
+    hours: () => {
+      const minutes = [0, 15, 30, 45];
+      const hours = [...Array(24).keys()];
+      let result = [];
+      for (const hour of hours) {
+        for (const minute of minutes) {
+          result.push({
+            hour,
+            minute,
+            label: formatDateFromHoursAndMinutes(hour, minute),
+          });
+        }
+      }
+      return result;
+    },
+    currentTime: () => {
+      const now = new Date();
+      return {
+        hour: now.getHours(),
+        minute: now.getMinutes(),
+        label_time: formatTime(now),
+        label_date: formatDate(now),
+      };
+    },
+  },
+  methods: {
+    onChangeDeparture() {
+      this.isArrivalReady = false;
+      store
+        .dispatch("getArrivalStations", { departure: this.departure })
+        .then(() => {
+          this.isArrivalReady = true;
+        });
+    },
+    onClickSearch() {
+      this.isSearchLoading = true;
+      const parameters: APIv2QueryParams = {
+        limit: 100,
+        offset: 0,
+        where: `date >= date'${this.from_date}'`,
+        order_by: "date asc, heure_depart asc",
+        refine: [`origine:${this.departure}`, `destination:${this.arrival}`],
+      };
+      store.dispatch("getJourneys", parameters).then(() => {
+        this.isSearchLoading = false;
+      });
+    },
+  },
 });
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
+label {
+  text-align: left;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+
+.custom-grid {
+  @media (min-width: 50em) {
+    grid-template-columns: 1.5fr 1fr;
+    grid-column-gap: 2em;
+  }
+  display: grid;
 }
 </style>
