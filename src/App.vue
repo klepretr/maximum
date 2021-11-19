@@ -1,5 +1,5 @@
 <template>
-  <main class="container">
+  <main class="container ml-5 mr-5">
     <router-view />
   </main>
 </template>
@@ -7,25 +7,17 @@
 <style lang="scss">
 @import "@/style/microclasses.scss";
 @import "@/../node_modules/@picocss/pico/scss/pico.scss";
+@import "@/style/custom.scss";
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
 }
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+:root {
+  width: 100%;
+  height: 100%;
 }
 </style>

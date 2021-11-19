@@ -26,6 +26,7 @@ const DEFAULT_V2_QUERY_PARAM: APIv2QueryParams = {
 const xios = axios.create({
   paramsSerializer: (params) =>
     QueryString.stringify(params, { arrayFormat: "repeat" }),
+  timeout: 3000,
 });
 
 export const ESCAPE_CAPITALIZE_WORDS = [
@@ -67,9 +68,17 @@ export default createStore({
     getDepartureStations: (state) => state.departureStations,
     getArrivalStations: (state) => state.arrivalStations,
     getJourneys: (state) => state.journeys,
+    getJourneysOnlyAvailables: (state) =>
+      state.journeys.filter((journey: Journey) => journey.available),
   },
   mutations: {
     setDepartureStations(state, departureStations) {
+      if (localStorage) {
+        localStorage.setItem(
+          "departureStations",
+          JSON.stringify(departureStations)
+        );
+      }
       state.departureStations = departureStations;
     },
     setArrivalStations(state, arrivalStations) {
@@ -93,10 +102,26 @@ export default createStore({
         })
         .then((res) =>
           commit("setDepartureStations", extractGaresFromAggregations(res.data))
-        );
+        )
+        .catch((err) => {
+          if (!err.status) {
+            // Network error
+            // Use localStorage if possible as fallback
+            console.error(
+              "Network error, use localStorage if possible as fallback"
+            );
+            if (localStorage && localStorage.getItem("departureStations")) {
+              const departureStations =
+                localStorage.getItem("departureStations");
+              if (departureStations) {
+                commit("setDepartureStations", JSON.parse(departureStations));
+              }
+            }
+          }
+        });
     },
     getArrivalStations(
-      { commit },
+      { getters, commit },
       parameters: { query: APIv2QueryParams; departure: string } = {
         query: DEFAULT_V2_QUERY_PARAM,
         departure: "",
@@ -113,7 +138,15 @@ export default createStore({
         })
         .then((res) =>
           commit("setArrivalStations", extractGaresFromAggregations(res.data))
-        );
+        )
+        .catch((err) => {
+          if (!err.status) {
+            // Network error
+            // Use departureStation as fallback
+            console.error("Network error, use departureStation as fallback");
+            commit("setArrivalStations", getters.getDepartureStations);
+          }
+        });
     },
     getJourneys(
       { commit },
@@ -125,7 +158,13 @@ export default createStore({
         })
         .then((res) =>
           commit("setJourneys", extractJourneysFromRecord(res.data))
-        );
+        )
+        .catch((err) => {
+          if (!err.status) {
+            // Network error
+            // Use departureStation as fallback
+          }
+        });
     },
   },
   modules: {},
