@@ -1,6 +1,6 @@
 <template>
-  <div class="mt-5">
-    <form class="ml-5 mr-5">
+  <section>
+    <form @submit="$event.preventDefault()">
       <div class="custom-grid">
         <label for="from_stations">
           Gare de départ
@@ -42,7 +42,13 @@
       <div class="custom-grid mt-5">
         <label for="date">
           A partir de
-          <input type="date" id="date" name="date" v-model="from_date" />
+          <input
+            type="date"
+            id="date"
+            name="date"
+            v-model="from_date"
+            required
+          />
         </label>
         <label for="departure_hour">
           &#8203;
@@ -59,49 +65,71 @@
       </div>
       <div class="grid">
         <span></span>
-        <button :aria-busy="isSearchLoading" @click="onClickSearch">
-          Rechercher...
+        <button
+          :disabled="!isSearchReadyToStart"
+          :aria-busy="isSearchLoading"
+          @click="onClickSearch"
+        >
+          {{ isSearchLoading ? "" : "Rechercher..." }}
         </button>
         <span></span>
       </div>
     </form>
-    <hr />
-    <article v-for="journey in journeys" v-bind:key="journey.id">
-      <header>{{ journey.date }} - {{ journey.heure_depart }}</header>
-      {{ journey.train_no }}
-      <footer>{{ journey.od_happy_card }}</footer>
+  </section>
+  <!-- Switch -->
+  <section id="results">
+    <article v-if="isSearchLoading">
+      <progress></progress>
+      Recherche en cours...
     </article>
-  </div>
+    <div v-if="isSearchReady">
+      <fieldset>
+        <label for="switch">
+          <input
+            type="checkbox"
+            id="switch"
+            name="switch"
+            role="switch"
+            v-model="showOnlyAvailableJourneys"
+          />
+          Cacher les trajets indisponibles
+        </label>
+      </fieldset>
+      <section
+        v-for="(journeys, date) in journeysFiltered(showOnlyAvailableJourneys)"
+        :key="date"
+      >
+        <div class="ml-5 ta-l date" v-if="journeys.length > 0">
+          {{ humanizeDate(date) }}
+        </div>
+        <JourneyElement
+          v-for="journey in journeys"
+          v-bind:key="journey.id"
+          :journey="journey"
+        ></JourneyElement>
+      </section>
+    </div>
+  </section>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import { mapGetters } from "vuex";
 import store from "../store";
-import { titleCaseGare } from "../utils/title-case.utils";
-import dayjs from "dayjs";
-import { APIv2QueryParams } from "@/models/query_params";
-
-const padStringZero = (value: number, padding: number) => {
-  return String(value).padStart(padding, "0");
-};
-
-const formatDateFromHoursAndMinutes = (hours: number, minutes: number) => {
-  return `${hours}h${padStringZero(minutes, 2)}`;
-};
-
-const formatDate = (date: Date) => {
-  return dayjs(date).format("YYYY-MM-DD");
-};
-
-const formatTime = (time: Date) => {
-  return `${dayjs(time).format("H")}h${dayjs(time).format("mm")}`;
-};
+import {
+  titleCaseGare,
+  formatDate,
+  formatTime,
+  formatDateFromHoursAndMinutes,
+  humanizeDate,
+} from "../utils";
+import { APIv2QueryParams, Journey } from "@/models/query_params";
+import JourneyElement from "./JourneyElement.vue";
 
 export default defineComponent({
   name: "HelloWorld",
-  props: {
-    msg: String,
+  components: {
+    JourneyElement,
   },
   mounted() {
     store.dispatch("getDepartureStations").then(() => {
@@ -113,9 +141,12 @@ export default defineComponent({
       isDepartureReady: false,
       isArrivalReady: false,
       isSearchLoading: false,
+      isSearchReadyToStart: false,
+      isSearchReady: false,
+      showOnlyAvailableJourneys: true,
       departure: "",
       arrival: "",
-      from_date: "",
+      from_date: formatDate(new Date()),
     };
   },
   computed: {
@@ -126,6 +157,9 @@ export default defineComponent({
     }),
     titleCaseGare: function () {
       return titleCaseGare;
+    },
+    humanizeDate: function () {
+      return humanizeDate;
     },
     hours: () => {
       const minutes = [0, 15, 30, 45];
@@ -155,6 +189,9 @@ export default defineComponent({
   methods: {
     onChangeDeparture() {
       this.isArrivalReady = false;
+      this.arrival = "";
+      this.isSearchReadyToStart =
+        this.departure != null && this.departure.trim() !== "";
       store
         .dispatch("getArrivalStations", { departure: this.departure })
         .then(() => {
@@ -163,16 +200,44 @@ export default defineComponent({
     },
     onClickSearch() {
       this.isSearchLoading = true;
+      this.isSearchReady = false;
+      const refine = [`origine:${this.departure}`];
+      if (this.arrival) {
+        refine.push(`destination:${this.arrival}`);
+      }
       const parameters: APIv2QueryParams = {
         limit: 100,
         offset: 0,
         where: `date >= date'${this.from_date}'`,
         order_by: "date asc, heure_depart asc",
-        refine: [`origine:${this.departure}`, `destination:${this.arrival}`],
+        refine,
       };
       store.dispatch("getJourneys", parameters).then(() => {
         this.isSearchLoading = false;
+        this.isSearchReady = true;
+        var elem = document.querySelector("#results");
+        if (elem) {
+          elem.scrollIntoView({ behavior: "smooth" });
+        }
       });
+    },
+    journeysFiltered: (showOnlyAvailableJourneys: boolean) => {
+      const groupByDays: { [key: string]: Journey[] } = {};
+      const results: Journey[] =
+        store.getters[
+          showOnlyAvailableJourneys
+            ? "getJourneysOnlyAvailables"
+            : "getJourneys"
+        ];
+      results.forEach((journey) => {
+        const date = journey.date.toString();
+        if (date in groupByDays) {
+          groupByDays[date].push(journey);
+        } else {
+          groupByDays[date] = [journey];
+        }
+      });
+      return groupByDays;
     },
   },
 });
@@ -190,5 +255,9 @@ label {
     grid-column-gap: 2em;
   }
   display: grid;
+}
+
+.date {
+  font-weight: 600;
 }
 </style>
