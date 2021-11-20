@@ -5,7 +5,7 @@ import {
   APIv2QueryParams,
   Journey,
   RecordsResponse,
-} from "@/models/query_params";
+} from "@/models";
 import QueryString from "qs";
 
 type APIv2Endpoints = "aggregates" | "records";
