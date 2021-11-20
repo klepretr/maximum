@@ -17,36 +17,40 @@ export const titleCaseGare = (value: string): string => {
     .join(" ");
 };
 
+const daysOfWeek = [
+  "dimanche",
+  "lundi",
+  "mardi",
+  "mercredi",
+  "jeudi",
+  "vendredi",
+  "samedi",
+];
+
+const monthOfYear = [
+  "janvier",
+  "février",
+  "mars",
+  "avril",
+  "mai",
+  "juin",
+  "juillet",
+  "août",
+  "septembre",
+  "octobre",
+  "novembre",
+  "décembre",
+];
+
 export const humanizeDate = (date: Date): string => {
-  const daysOfWeek = [
-    "dimanche",
-    "lundi",
-    "mardi",
-    "mercredi",
-    "jeudi",
-    "vendredi",
-    "samedi",
-  ];
-
-  const monthOfYear = [
-    "janvier",
-    "février",
-    "mars",
-    "avril",
-    "mai",
-    "juin",
-    "juillet",
-    "août",
-    "septembre",
-    "octobre",
-    "novembre",
-    "décembre",
-  ];
-
   const now = dayjs();
   const timeObj = dayjs(date);
-  const diffDays = timeObj.diff(now, "days");
 
+  if (now.isSame(timeObj, "date")) {
+    return "aujourd'hui";
+  }
+
+  const diffDays = timeObj.diff(now, "days");
   if (diffDays === 0) {
     return "demain";
   }
