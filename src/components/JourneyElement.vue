@@ -1,24 +1,31 @@
 <template>
   <article :class="{ disable: !journey.available }">
     <div class="custom-grid">
-      <div class="arrival">
-        <span class="arrival_label">de</span>
-        <span class="arrival_name">{{ titleCaseGare(journey.origine) }}</span>
+      <div class="station">
+        <span class="station_label">de</span>
+        <span class="station_name">{{ titleCaseGare(journey.origine) }}</span>
       </div>
-      <div class="ta-e mr-5">
+      <div class="ta-e">
         {{ journey.available ? "disponible" : "indisponible" }}
       </div>
+      <div>
+        <fieldset v-if="journey.available">
+          <label for="terms">
+            <input type="checkbox" id="terms" name="terms" />
+          </label>
+        </fieldset>
+      </div>
       <div class="spliter"></div>
-      <div class="ta-e timesheet">
+      <div class="ta-e timesheet merge-col-ends">
         {{ journey.heure_depart }} ➔ {{ journey.heure_arrivee }}
       </div>
-      <div class="arrival">
-        <span class="arrival_label">vers</span>
-        <span class="arrival_name">{{
+      <div class="station">
+        <span class="station_label">vers</span>
+        <span class="station_name">{{
           titleCaseGare(journey.destination)
         }}</span>
       </div>
-      <div class="ta-e number">
+      <div class="ta-e number merge-col-ends">
         train n°<span style="font-weight: 600">{{ journey.train_no }}</span>
       </div>
     </div>
@@ -46,13 +53,17 @@ article {
   padding: 20px;
 }
 
+fieldset {
+  margin-bottom: 0;
+}
+
 .disable {
   background-color: #7575753d;
   opacity: 0.7;
 }
 
 .custom-grid {
-  grid-template-columns: 2fr 1.5fr;
+  grid-template-columns: 2fr 1fr 4%;
   grid-template-rows: 1 1.5em 1;
   grid-column-gap: 2em;
   display: grid;
@@ -61,17 +72,22 @@ article {
   text-align: left;
 }
 
-.arrival_label {
+.station_label {
   font-size: 12px;
 }
 
-.arrival_name {
+.station_name {
   margin-left: 5px;
   font-weight: 600;
 }
 
 .timesheet {
   font-weight: 1000;
+}
+
+.merge-col-ends {
+  grid-column-start: 2;
+  grid-column-end: 4;
 }
 
 .number {

@@ -1,14 +1,10 @@
 <template>
   <header class="header">
     <span class="header_inner">
-      <a href="#">
-        <span class="header_logo">
-          <div class="center">
-            <div class="hexagon"></div>
-          </div>
-          <div>{{ appName }}</div>
-        </span>
-      </a>
+      <span class="header_logo">
+        <img class="logo" src="@/assets/logo.png" />
+        <div>{{ appName }}</div>
+      </span>
     </span>
   </header>
 </template>
@@ -65,6 +61,12 @@ a {
   font-weight: bold;
 }
 
+.logo {
+  height: 32px;
+  width: 32px;
+  margin: 0 5px 0 5px;
+}
+
 @media (max-width: 960px) {
   .header_logo {
     max-width: 300px;
@@ -75,45 +77,6 @@ a {
   .header_logo {
     width: 300px;
     max-width: 100%;
-  }
-}
-
-.hexagon {
-  $hexagon-size: 45px;
-  $hexagon-color-1: var(--color-primary);
-  $hexagon-color-2: var(--color-secondary);
-
-  width: ($hexagon-size * 0.645);
-  height: $hexagon-size;
-  background-image: linear-gradient(90deg, $hexagon-color-1, $hexagon-color-2);
-  border-radius: ($hexagon-size / 10);
-  transition: transform 400ms ease;
-
-  &:hover {
-    transform: rotate(30deg);
-  }
-
-  &:before,
-  &:after {
-    content: "";
-    display: block;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: inherit;
-    height: inherit;
-    background-image: inherit;
-    border-radius: inherit;
-  }
-
-  &:before {
-    transform: rotate(60deg);
-  }
-
-  &:after {
-    transform: rotate(-60deg);
   }
 }
 
