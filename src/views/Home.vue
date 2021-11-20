@@ -1,7 +1,4 @@
 <template>
-  <nav>
-    <div>Maximum</div>
-  </nav>
   <div class="home">
     <SearchComponent />
   </div>
@@ -19,14 +16,7 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
-nav {
-  height: 3em;
-  display: flex;
-  font-size: 22px;
-}
-
-nav > div {
-  margin: auto;
-  font-weight: 600;
+.home {
+  margin-top: 15px;
 }
 </style>
