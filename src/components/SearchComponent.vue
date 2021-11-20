@@ -1,5 +1,6 @@
 <template>
   <section>
+    <h4 class="ta-l">Recherche de trajets</h4>
     <form @submit="$event.preventDefault()">
       <div class="custom-grid">
         <label for="from_stations">
