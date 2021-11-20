@@ -3,18 +3,18 @@
     <div>Maximum</div>
   </nav>
   <div class="home">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <SearchComponent />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import HelloWorld from "@/components/HelloWorld.vue";
+import SearchComponent from "@/components/SearchComponent.vue";
 
 export default defineComponent({
   name: "Home",
   components: {
-    HelloWorld,
+    SearchComponent,
   },
 });
 </script>
@@ -22,6 +22,7 @@ export default defineComponent({
 nav {
   height: 3em;
   display: flex;
+  font-size: 22px;
 }
 
 nav > div {
