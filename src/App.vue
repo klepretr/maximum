@@ -1,8 +1,19 @@
 <template>
+  <Banner appName="Maximum" />
   <main class="container ml-5 mr-5">
     <router-view />
   </main>
 </template>
+<script>
+import Banner from "@/components/Banner.vue";
+import { defineComponent } from "@vue/runtime-core";
+
+export default defineComponent({
+  components: {
+    Banner,
+  },
+});
+</script>
 
 <style lang="scss">
 @import "@/style/microclasses.scss";
@@ -17,7 +28,7 @@
 }
 
 :root {
-  width: 100%;
-  height: 100%;
+  --color-white: #f8f5ef;
+  background: var(--color-white);
 }
 </style>
