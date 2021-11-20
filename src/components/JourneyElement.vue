@@ -11,7 +11,15 @@
       <div>
         <fieldset v-if="journey.available">
           <label for="terms">
-            <input type="checkbox" id="terms" name="terms" />
+            <div>
+              <input
+                data-tooltip="Favoris"
+                type="checkbox"
+                name="terms"
+                v-model="selected"
+                @change="onChangeFavoris(journey)"
+              />
+            </div>
           </label>
         </fieldset>
       </div>
@@ -32,6 +40,7 @@
   </article>
 </template>
 <script lang="ts">
+import { UiJourney } from "@/models";
 import { defineComponent } from "@vue/runtime-core";
 import { titleCaseGare } from "../utils";
 
@@ -40,9 +49,19 @@ export default defineComponent({
   props: {
     journey: Object,
   },
+  data() {
+    return {
+      selected: this.journey?.selected || false,
+    };
+  },
   computed: {
     titleCaseGare: function () {
       return titleCaseGare;
+    },
+  },
+  methods: {
+    onChangeFavoris(journey: UiJourney) {
+      console.log({ journey });
     },
   },
 });
@@ -99,5 +118,9 @@ fieldset {
   border-left-width: medium;
   border-left-style: solid;
   border-left-color: #7575754f;
+}
+
+[data-tooltip] {
+  position: absolute;
 }
 </style>

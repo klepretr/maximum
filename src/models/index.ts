@@ -46,6 +46,10 @@ export interface Station {
   label: string;
 }
 
+export interface UiJourney extends Journey {
+  selected: boolean;
+}
+
 export interface Journey extends IAPIJourney {
   id: string;
   available: boolean;

@@ -123,7 +123,7 @@ import {
   formatDateFromHoursAndMinutes,
   humanizeDate,
 } from "../utils";
-import { APIv2QueryParams, Journey } from "@/models";
+import { APIv2QueryParams, Journey, UiJourney } from "@/models";
 import JourneyElement from "./JourneyElement.vue";
 
 export default defineComponent({
@@ -221,8 +221,10 @@ export default defineComponent({
         }
       });
     },
-    journeysFiltered: (showOnlyAvailableJourneys: boolean) => {
-      const groupByDays: { [key: string]: Journey[] } = {};
+    journeysFiltered: (
+      showOnlyAvailableJourneys: boolean
+    ): { [key: string]: UiJourney[] } => {
+      const groupByDays: { [key: string]: UiJourney[] } = {};
       const results: Journey[] =
         store.getters[
           showOnlyAvailableJourneys
@@ -232,9 +234,9 @@ export default defineComponent({
       results.forEach((journey) => {
         const date = journey.date.toString();
         if (date in groupByDays) {
-          groupByDays[date].push(journey);
+          groupByDays[date].push({ ...journey, selected: false });
         } else {
-          groupByDays[date] = [journey];
+          groupByDays[date] = [{ ...journey, selected: false }];
         }
       });
       return groupByDays;
