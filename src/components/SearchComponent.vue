@@ -233,11 +233,10 @@ export default defineComponent({
         ];
       results.forEach((journey) => {
         const date = journey.date.toString();
-        if (date in groupByDays) {
-          groupByDays[date].push({ ...journey, selected: false });
-        } else {
-          groupByDays[date] = [{ ...journey, selected: false }];
+        if (!(date in groupByDays)) {
+          groupByDays[date] = [];
         }
+        groupByDays[date].push({ ...journey, selected: false });
       });
       return groupByDays;
     },
