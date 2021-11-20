@@ -123,11 +123,11 @@ import {
   formatDateFromHoursAndMinutes,
   humanizeDate,
 } from "../utils";
-import { APIv2QueryParams, Journey } from "@/models/query_params";
+import { APIv2QueryParams, Journey } from "@/models";
 import JourneyElement from "./JourneyElement.vue";
 
 export default defineComponent({
-  name: "HelloWorld",
+  name: "SearchComponent",
   components: {
     JourneyElement,
   },
