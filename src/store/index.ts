@@ -1,4 +1,5 @@
-import { createStore } from "vuex";
+import { InjectionKey } from "vue";
+import { createStore, useStore as baseUseStore, Store } from "vuex";
 import axios from "axios";
 import {
   AggregationsResponse,
@@ -31,6 +32,7 @@ const xios = axios.create({
 
 export const ESCAPE_CAPITALIZE_WORDS = [
   { value: "TGV", force: true },
+  { value: "SNCF", force: true },
   { value: "le", force: false },
   { value: "la", force: false },
   { value: "sur", force: false },
@@ -41,6 +43,24 @@ export const ESCAPE_CAPITALIZE_WORDS = [
   { value: "en", force: false },
   { value: "les", force: false },
 ];
+
+const mergeStationsAndFavorites = (
+  stations: string[],
+  favorites: string[]
+): UIStation[] => {
+  return stations.map((station) => {
+    return {
+      name: station,
+      favorite: favorites.includes(station),
+    };
+  });
+};
+
+const saveFavorites = (favoriteStations: string[]) => {
+  if (localStorage) {
+    localStorage.setItem("favoriteStations", JSON.stringify(favoriteStations));
+  }
+};
 
 const extractGaresFromAggregations = (data: AggregationsResponse): string[] => {
   return data.aggregations.map((aggr) => {
@@ -58,15 +78,43 @@ const extractJourneysFromRecord = (data: RecordsResponse): Journey[] => {
   });
 };
 
-export default createStore({
+export interface UIStation {
+  name: string;
+  favorite: boolean;
+}
+
+export interface State {
+  departureStations: UIStation[];
+  arrivalStations: UIStation[];
+  favoriteStations: string[];
+  journeys: Journey[];
+}
+
+export const key: InjectionKey<Store<State>> = Symbol();
+
+export function useStore(): Store<State> {
+  return baseUseStore(key);
+}
+
+export default createStore<State>({
   state: {
     departureStations: [],
     arrivalStations: [],
+    favoriteStations: [],
     journeys: [],
   },
   getters: {
     getDepartureStations: (state) => state.departureStations,
+    getDepartureStationsFavorites: (state) =>
+      state.departureStations.filter((station) => station.favorite),
+    getDepartureStationsNotFavorite: (state) =>
+      state.departureStations.filter((station) => !station.favorite),
     getArrivalStations: (state) => state.arrivalStations,
+    getArrivalStationsFavorites: (state) =>
+      state.arrivalStations.filter((station) => station.favorite),
+    getArrivalStationsNotFavorite: (state) =>
+      state.arrivalStations.filter((station) => !station.favorite),
+    getFavoriteStations: (state) => state.favoriteStations,
     getJourneys: (state) => state.journeys,
     getJourneysOnlyAvailables: (state) =>
       state.journeys.filter((journey: Journey) => journey.available),
@@ -84,13 +132,29 @@ export default createStore({
     setArrivalStations(state, arrivalStations) {
       state.arrivalStations = arrivalStations;
     },
+    addFavoriteStations(state, station) {
+      state.favoriteStations.push(station);
+      saveFavorites(state.favoriteStations);
+    },
+    removeFavoriteStations(state, station) {
+      if (state.favoriteStations.includes(station)) {
+        state.favoriteStations.splice(
+          state.favoriteStations.indexOf(station),
+          1
+        );
+      }
+      saveFavorites(state.favoriteStations);
+    },
+    setFavoriteStations(state, favoriteStations) {
+      state.favoriteStations = favoriteStations;
+    },
     setJourneys(state, journeys) {
       state.journeys = journeys;
     },
   },
   actions: {
     getDepartureStations(
-      { commit },
+      { getters, commit },
       parameters: APIv2QueryParams = {
         ...DEFAULT_V2_QUERY_PARAM,
         group_by: "origine",
@@ -101,7 +165,13 @@ export default createStore({
           params: { ...DEFAULT_V2_QUERY_PARAM, ...parameters },
         })
         .then((res) =>
-          commit("setDepartureStations", extractGaresFromAggregations(res.data))
+          commit(
+            "setDepartureStations",
+            mergeStationsAndFavorites(
+              extractGaresFromAggregations(res.data),
+              getters.getFavoriteStations
+            )
+          )
         )
         .catch((err) => {
           if (!err.status) {
@@ -114,7 +184,13 @@ export default createStore({
               const departureStations =
                 localStorage.getItem("departureStations");
               if (departureStations) {
-                commit("setDepartureStations", JSON.parse(departureStations));
+                commit(
+                  "setDepartureStations",
+                  mergeStationsAndFavorites(
+                    JSON.parse(departureStations),
+                    getters.getFavoriteStations
+                  )
+                );
               }
             }
           }
@@ -137,16 +213,38 @@ export default createStore({
           },
         })
         .then((res) =>
-          commit("setArrivalStations", extractGaresFromAggregations(res.data))
+          commit(
+            "setArrivalStations",
+            mergeStationsAndFavorites(
+              extractGaresFromAggregations(res.data),
+              getters.getFavoriteStations
+            )
+          )
         )
         .catch((err) => {
           if (!err.status) {
             // Network error
             // Use departureStation as fallback
             console.error("Network error, use departureStation as fallback");
-            commit("setArrivalStations", getters.getDepartureStations);
+            commit(
+              "setArrivalStations",
+              mergeStationsAndFavorites(
+                getters.getDepartureStations,
+                getters.getFavoriteStations
+              )
+            );
           }
         });
+    },
+    getFavoriteStations({ commit }) {
+      if (localStorage && localStorage.getItem("favoriteStations")) {
+        const favoriteStations = localStorage.getItem("favoriteStations");
+        if (favoriteStations) {
+          commit("setFavoriteStations", JSON.parse(favoriteStations));
+          return;
+        }
+      }
+      commit("setFavoriteStations", []);
     },
     getJourneys(
       { commit },
@@ -162,7 +260,6 @@ export default createStore({
         .catch((err) => {
           if (!err.status) {
             // Network error
-            // Use departureStation as fallback
           }
         });
     },

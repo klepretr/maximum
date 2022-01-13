@@ -8,7 +8,7 @@
       <div class="ta-e">
         {{ journey.available ? "disponible" : "indisponible" }}
       </div>
-      <div>
+      <!--div>
         <fieldset v-if="journey.available">
           <label for="terms">
             <div>
@@ -22,7 +22,8 @@
             </div>
           </label>
         </fieldset>
-      </div>
+      </div-->
+      <div></div>
       <div class="spliter"></div>
       <div class="ta-e timesheet merge-col-ends">
         {{ journey.heure_depart }} ➔ {{ journey.heure_arrivee }}

@@ -2,47 +2,94 @@
   <section>
     <h4 class="ta-l">Recherche de trajets</h4>
     <form @submit="$event.preventDefault()">
-      <div class="custom-grid">
-        <label for="from_stations">
-          Gare de départ
-          <select
-            @change="onChangeDeparture"
-            :disabled="!isDepartureReady"
-            :aria-busy="!isDepartureReady"
-            v-model="departure"
-            id="from_stations"
-          >
-            <option value="" disabled selected>Départ...</option>
-            <option
-              v-for="station in departureStations"
-              v-bind:key="station"
-              :value="station"
+      <div class="row-one-grid">
+        <div class="departure-grid">
+          <label for="from_stations">
+            Gare de départ
+            <select
+              @change="onChangeDeparture"
+              :disabled="!isDepartureReady"
+              :aria-busy="!isDepartureReady"
+              v-model="departure"
+              id="from_stations"
             >
-              {{ titleCaseGare(station) }}
-            </option>
-          </select>
-        </label>
+              <option value="" disabled selected>Départ...</option>
+              <optgroup v-if="departureStationsFavorites.length > 0">
+                <option
+                  v-for="station in departureStationsFavorites"
+                  v-bind:key="station.name"
+                  :value="station"
+                >
+                  {{ titleCaseGare(station.name) }}
+                </option>
+              </optgroup>
+              <option
+                v-for="station in departureStationsNotFavorite"
+                v-bind:key="station.name"
+                :value="station"
+              >
+                {{ titleCaseGare(station.name) }}
+              </option>
+            </select>
+          </label>
+          <label for="favorite_btn">
+            &#8203;
+            <button
+              :disabled="!isSearchReadyToStart"
+              id="favorite_btn"
+              @click="handleFavorite(departure)"
+              :value="departure"
+              :class="{ selected: departure.favorite }"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="star"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                ></polygon>
+              </svg>
+            </button>
+          </label>
+        </div>
         <label for="to_stations">
           Gare d'arrivée
           <select
+            @change="onChangeArrival()"
             :disabled="!isArrivalReady"
             v-model="arrival"
             id="to_stations"
           >
             <option value="" disabled selected>Arrivée...</option>
+            <optgroup v-if="arrivalStationsFavorites.length > 0">
+              <option
+                v-for="station in arrivalStationsFavorites"
+                v-bind:key="station.name"
+                :value="station.name"
+              >
+                {{ titleCaseGare(station.name) }}
+              </option>
+            </optgroup>
             <option
-              v-for="station in arrivalStations"
-              v-bind:key="station"
-              :value="station"
+              v-for="station in arrivalStationsNotFavorite"
+              v-bind:key="station.name"
+              :value="station.name"
             >
-              {{ titleCaseGare(station) }}
+              {{ titleCaseGare(station.name) }}
             </option>
           </select>
         </label>
       </div>
-      <div class="custom-grid mt-5">
+      <div class="row-two-grid mt-5">
         <label for="date">
-          A partir de
+          A partir du
           <input
             type="date"
             id="date"
@@ -51,29 +98,17 @@
             required
           />
         </label>
-        <label for="departure_hour">
+        <label>
           &#8203;
-          <select id="departure_hour">
-            <option :value="currentTime" selected>
-              {{ currentTime.label_time }}
-            </option>
-            <option disabled></option>
-            <option v-for="hour in hours" v-bind:key="hour">
-              {{ hour.label }}
-            </option>
-          </select>
+          <button
+            :disabled="!isSearchReadyToStart"
+            :aria-busy="isSearchLoading"
+            @click="onClickSearch"
+            class="mt-1"
+          >
+            {{ isSearchLoading ? "" : "Rechercher..." }}
+          </button>
         </label>
-      </div>
-      <div class="grid">
-        <span></span>
-        <button
-          :disabled="!isSearchReadyToStart"
-          :aria-busy="isSearchLoading"
-          @click="onClickSearch"
-        >
-          {{ isSearchLoading ? "" : "Rechercher..." }}
-        </button>
-        <span></span>
       </div>
     </form>
   </section>
@@ -96,6 +131,9 @@
           Cacher les trajets indisponibles
         </label>
       </fieldset>
+      <section v-if="Object.keys(journeysFiltered(showOnlyAvailableJourneys)).length === 0">
+        <article>Pas d'itinéraire disponible</article>
+      </section>
       <section
         v-for="(journeys, date) in journeysFiltered(showOnlyAvailableJourneys)"
         :key="date"
@@ -116,14 +154,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { mapGetters } from "vuex";
-import store from "../store";
-import {
-  titleCaseGare,
-  formatDate,
-  formatTime,
-  formatDateFromHoursAndMinutes,
-  humanizeDate,
-} from "../utils";
+import store, { UIStation } from "../store";
+import { titleCaseGare, formatDate, humanizeDate } from "../utils";
 import { APIv2QueryParams, Journey, UiJourney } from "@/models";
 import JourneyElement from "./JourneyElement.vue";
 
@@ -136,16 +168,24 @@ export default defineComponent({
     store.dispatch("getDepartureStations").then(() => {
       this.isDepartureReady = true;
     });
+
+    store.dispatch("getFavoriteStations");
   },
   data() {
+    const departure: { name: string; favorite: boolean } = {
+      name: "",
+      favorite: false,
+    };
+
     return {
       isDepartureReady: false,
       isArrivalReady: false,
+      isArrivalSelected: false,
       isSearchLoading: false,
       isSearchReadyToStart: false,
       isSearchReady: false,
       showOnlyAvailableJourneys: true,
-      departure: "",
+      departure,
       arrival: "",
       from_date: formatDate(new Date()),
     };
@@ -153,7 +193,11 @@ export default defineComponent({
   computed: {
     ...mapGetters({
       departureStations: "getDepartureStations",
+      departureStationsFavorites: "getDepartureStationsFavorites",
+      departureStationsNotFavorite: "getDepartureStationsNotFavorite",
       arrivalStations: "getArrivalStations",
+      arrivalStationsFavorites: "getArrivalStationsFavorites",
+      arrivalStationsNotFavorite: "getArrivalStationsNotFavorite",
       journeys: "getJourneys",
     }),
     titleCaseGare: function () {
@@ -162,47 +206,28 @@ export default defineComponent({
     humanizeDate: function () {
       return humanizeDate;
     },
-    hours: () => {
-      const minutes = [0, 15, 30, 45];
-      const hours = [...Array(24).keys()];
-      let result = [];
-      for (const hour of hours) {
-        for (const minute of minutes) {
-          result.push({
-            hour,
-            minute,
-            label: formatDateFromHoursAndMinutes(hour, minute),
-          });
-        }
-      }
-      return result;
-    },
-    currentTime: () => {
-      const now = new Date();
-      return {
-        hour: now.getHours(),
-        minute: now.getMinutes(),
-        label_time: formatTime(now),
-        label_date: formatDate(now),
-      };
-    },
   },
   methods: {
     onChangeDeparture() {
       this.isArrivalReady = false;
       this.arrival = "";
       this.isSearchReadyToStart =
-        this.departure != null && this.departure.trim() !== "";
+        this.departure.name != null && this.departure.name.trim() !== "";
+      this.isArrivalSelected = false;
       store
-        .dispatch("getArrivalStations", { departure: this.departure })
+        .dispatch("getArrivalStations", { departure: this.departure.name })
         .then(() => {
           this.isArrivalReady = true;
         });
     },
+    onChangeArrival() {
+      this.isArrivalSelected =
+        this.arrival != null && this.arrival.trim() !== "";
+    },
     onClickSearch() {
       this.isSearchLoading = true;
       this.isSearchReady = false;
-      const refine = [`origine:${this.departure}`];
+      const refine = [`origine:${this.departure.name}`];
       if (this.arrival) {
         refine.push(`destination:${this.arrival}`);
       }
@@ -241,6 +266,18 @@ export default defineComponent({
       });
       return groupByDays;
     },
+    ou() {
+      console.log({journeys: this.journeysFiltered(false)});
+      return this.journeysFiltered(false);
+    },
+    handleFavorite: (station: UIStation) => {
+      station.favorite = !station.favorite;
+      if (station.favorite) {
+        store.commit("addFavoriteStations", station.name);
+      } else {
+        store.commit("removeFavoriteStations", station.name);
+      }
+    },
   },
 });
 </script>
@@ -251,10 +288,33 @@ label {
   text-align: left;
 }
 
-.custom-grid {
+.departure-grid {
+  grid-template-columns: 10fr 1fr;
+  grid-column-gap: 0.5em;
+  display: grid;
+}
+
+.selected .star {
+  fill: #f3e745;
+  stroke: #374956;
+}
+
+#favorite_btn {
+  margin-top: 0.25em;
+}
+
+.row-one-grid {
   @media (min-width: 50em) {
-    grid-template-columns: 1.5fr 1fr;
-    grid-column-gap: 2em;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 1em;
+  }
+  display: grid;
+}
+
+.row-two-grid {
+  @media (min-width: 50em) {
+    grid-template-columns: 1.2fr 1fr;
+    grid-column-gap: 1em;
   }
   display: grid;
 }
