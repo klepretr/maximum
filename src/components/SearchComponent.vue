@@ -131,7 +131,11 @@
           Cacher les trajets indisponibles
         </label>
       </fieldset>
-      <section v-if="Object.keys(journeysFiltered(showOnlyAvailableJourneys)).length === 0">
+      <section
+        v-if="
+          Object.keys(journeysFiltered(showOnlyAvailableJourneys)).length === 0
+        "
+      >
         <article>Pas d'itinéraire disponible</article>
       </section>
       <section
@@ -267,7 +271,7 @@ export default defineComponent({
       return groupByDays;
     },
     ou() {
-      console.log({journeys: this.journeysFiltered(false)});
+      console.log({ journeys: this.journeysFiltered(false) });
       return this.journeysFiltered(false);
     },
     handleFavorite: (station: UIStation) => {
