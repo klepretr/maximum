@@ -48,8 +48,8 @@
       </div>
     </div>
     <blockquote class="ta-l" v-if="moreInfo">
-      La disponibilité de ce trajet peut
-      <mark>ne pas être à jour</mark>.<br /><br />
+      La disponibilité de ce trajet
+      <mark>peut ne pas être à jour</mark>.<br /><br />
       <small>
         La
         <a
@@ -57,7 +57,7 @@
         >
           source de données
         </a>
-        qu'utilise cette application est mise à jour une fois par jour. Veuillez
+        qu'utilise cette application est mise à jour quotidiennement. Veuillez
         vérifier l'état réel du trajet depuis votre application de réservation.
       </small>
     </blockquote>

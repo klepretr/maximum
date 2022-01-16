@@ -99,7 +99,16 @@
           />
         </label>
         <label>
-          &#8203;
+          <small class="ta-l di-b custom-label">
+            dernière mise à jour des trajets :
+            <em
+              :data-tooltip="
+                lastUpdateDataset ? lastUpdateDataset.format('LLL') : null
+              "
+            >
+              {{ humanizeDateDiff(lastUpdateDataset) || "indisponible" }}
+            </em>
+          </small>
           <button
             :disabled="!isSearchReadyToStart"
             :aria-busy="isSearchLoading"
@@ -111,16 +120,6 @@
         </label>
       </div>
     </form>
-    <small class="ta-r di-b">
-      dernière mise à jour des trajets :
-      <em
-        :data-tooltip="
-          lastUpdateDataset ? lastUpdateDataset.format('LLL') : null
-        "
-      >
-        {{ humanizeDateDiff(lastUpdateDataset) || "indisponible" }}
-      </em>
-    </small>
   </section>
   <!-- Switch -->
   <section id="results">
@@ -337,6 +336,12 @@ label {
     grid-column-gap: 1em;
   }
   display: grid;
+}
+
+.custom-label {
+  @media (max-width: 50em) {
+    margin-bottom: 1rem;
+  }
 }
 
 .date {
