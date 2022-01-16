@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="mb-3">
     <h4 class="ta-l">Recherche de trajets</h4>
     <form @submit="$event.preventDefault()">
       <div class="row-one-grid">
@@ -111,6 +111,16 @@
         </label>
       </div>
     </form>
+    <small class="ta-r di-b">
+      dernière mise à jour des trajets :
+      <em
+        :data-tooltip="
+          lastUpdateDataset ? lastUpdateDataset.format('LLL') : null
+        "
+      >
+        {{ humanizeDateDiff(lastUpdateDataset) || "indisponible" }}
+      </em>
+    </small>
   </section>
   <!-- Switch -->
   <section id="results">
@@ -159,7 +169,12 @@
 import { defineComponent } from "vue";
 import { mapGetters } from "vuex";
 import store, { UIStation } from "../store";
-import { titleCaseGare, formatDate, humanizeDate } from "../utils";
+import {
+  titleCaseGare,
+  formatDate,
+  humanizeDate,
+  humanizeDateDiff,
+} from "../utils";
 import { APIv2QueryParams, Journey, UiJourney } from "@/models";
 import JourneyElement from "./JourneyElement.vue";
 
@@ -174,6 +189,7 @@ export default defineComponent({
     });
 
     store.dispatch("getFavoriteStations");
+    store.dispatch("getLastUpdateDataset");
   },
   data() {
     const departure: { name: string; favorite: boolean } = {
@@ -203,12 +219,16 @@ export default defineComponent({
       arrivalStationsFavorites: "getArrivalStationsFavorites",
       arrivalStationsNotFavorite: "getArrivalStationsNotFavorite",
       journeys: "getJourneys",
+      lastUpdateDataset: "getLastUpdateDataset",
     }),
     titleCaseGare: function () {
       return titleCaseGare;
     },
     humanizeDate: function () {
       return humanizeDate;
+    },
+    humanizeDateDiff: function () {
+      return humanizeDateDiff;
     },
   },
   methods: {
@@ -269,10 +289,6 @@ export default defineComponent({
         groupByDays[date].push({ ...journey, selected: false });
       });
       return groupByDays;
-    },
-    ou() {
-      console.log({ journeys: this.journeysFiltered(false) });
-      return this.journeysFiltered(false);
     },
     handleFavorite: (station: UIStation) => {
       station.favorite = !station.favorite;

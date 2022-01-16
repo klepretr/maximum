@@ -18,10 +18,6 @@
           <sup v-if="moreInfo">&#9746;</sup>
         </a>
       </div>
-      <!--div class="ta-e mr-3">
-        
-        <span>La disponibilité des trajets présenté dans cette application peut ne pas être correcte</span-->
-      <!--/div-->
       <!--div>
         <fieldset v-if="journey.available">
           <label for="terms">

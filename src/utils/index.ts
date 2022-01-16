@@ -1,5 +1,13 @@
 import { ESCAPE_CAPITALIZE_WORDS } from "@/store";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
+require("dayjs/locale/fr");
+
+dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
+dayjs.locale("fr");
 
 export const titleCaseGare = (value: string): string => {
   return value
@@ -61,6 +69,13 @@ export const humanizeDate = (date: Date): string => {
       monthOfYear[timeObj.get("month")]
     }`;
   }
+};
+
+export const humanizeDateDiff = (date: dayjs.Dayjs | null): string | null => {
+  if (!date) {
+    return null;
+  }
+  return dayjs(date).fromNow();
 };
 
 const padStringZero = (value: number, padding: number) => {

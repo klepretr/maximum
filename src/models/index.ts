@@ -30,6 +30,7 @@ export interface APIv2QueryParams {
   order_by?: string[] | string;
   refine?: string[] | string;
   facet?: Facet[] | Facet;
+  timezone?: string;
 }
 
 export interface APIv1QueryParams {
@@ -93,6 +94,21 @@ export interface AggregationsValueResponse {
 export interface AggregationsResponse {
   links: LinksResponse;
   aggregations: AggregationsValueResponse[];
+}
+
+export interface DatasetMetadataDefault {
+  data_processed: Date;
+}
+
+export interface DatasetMetadata {
+  default: DatasetMetadataDefault;
+}
+export interface DatasetInfo {
+  metas: DatasetMetadata;
+}
+export interface DatasetInfoResponse {
+  links: LinksResponse;
+  dataset: DatasetInfo;
 }
 
 export interface IAPILink {

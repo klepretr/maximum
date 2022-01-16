@@ -4,20 +4,24 @@ import axios from "axios";
 import {
   AggregationsResponse,
   APIv2QueryParams,
+  DatasetInfoResponse,
   Journey,
   RecordsResponse,
 } from "@/models";
 import QueryString from "qs";
+import dayjs from "dayjs";
 
 type APIv2Endpoints = "aggregates" | "records";
 
 const BASE_URL = "https://ressources.data.sncf.com/api/";
 const DATASET_URL_V2 = (
   dataset: string,
-  endpoint: APIv2Endpoints = "aggregates"
-): string => BASE_URL + `v2/catalog/datasets/${dataset}/${endpoint}`;
+  endpoint: APIv2Endpoints | null = "aggregates"
+): string =>
+  BASE_URL + `v2/catalog/datasets/${dataset}${endpoint ? "/" + endpoint : ""}`;
 
 const DATASET_IDENTIFIER = "tgvmax";
+const TZ_IDENTIFIER = "Europe/Paris";
 
 const DEFAULT_V2_QUERY_PARAM: APIv2QueryParams = {
   limit: 1000,
@@ -78,6 +82,12 @@ const extractJourneysFromRecord = (data: RecordsResponse): Journey[] => {
   });
 };
 
+const extractLastUpdateFromDatasetInfo = (
+  data: DatasetInfoResponse
+): dayjs.Dayjs => {
+  return dayjs(data?.dataset?.metas?.default?.data_processed) || null;
+};
+
 export interface UIStation {
   name: string;
   favorite: boolean;
@@ -88,6 +98,7 @@ export interface State {
   arrivalStations: UIStation[];
   favoriteStations: string[];
   journeys: Journey[];
+  lastUpdateDataset: dayjs.Dayjs | null;
 }
 
 export const key: InjectionKey<Store<State>> = Symbol();
@@ -102,6 +113,7 @@ export default createStore<State>({
     arrivalStations: [],
     favoriteStations: [],
     journeys: [],
+    lastUpdateDataset: null,
   },
   getters: {
     getDepartureStations: (state) => state.departureStations,
@@ -118,6 +130,7 @@ export default createStore<State>({
     getJourneys: (state) => state.journeys,
     getJourneysOnlyAvailables: (state) =>
       state.journeys.filter((journey: Journey) => journey.available),
+    getLastUpdateDataset: (state) => state.lastUpdateDataset,
   },
   mutations: {
     setDepartureStations(state, departureStations) {
@@ -131,6 +144,9 @@ export default createStore<State>({
     },
     setArrivalStations(state, arrivalStations) {
       state.arrivalStations = arrivalStations;
+    },
+    setLastUpdateDataset(state, lastUpdateDataset) {
+      state.lastUpdateDataset = lastUpdateDataset;
     },
     addFavoriteStations(state, station) {
       state.favoriteStations.push(station);
@@ -153,6 +169,31 @@ export default createStore<State>({
     },
   },
   actions: {
+    getLastUpdateDataset(
+      { commit },
+      parameters: APIv2QueryParams = {
+        ...DEFAULT_V2_QUERY_PARAM,
+        timezone: TZ_IDENTIFIER,
+      }
+    ) {
+      return xios
+        .get(DATASET_URL_V2(DATASET_IDENTIFIER, null), {
+          params: { ...DEFAULT_V2_QUERY_PARAM, ...parameters },
+        })
+        .then((res) =>
+          commit(
+            "setLastUpdateDataset",
+            extractLastUpdateFromDatasetInfo(res.data)
+          )
+        )
+        .catch((err) => {
+          if (!err.status) {
+            // Network error
+            // Use localStorage if possible as fallback
+            console.error("Network error, no fallback");
+          }
+        });
+    },
     getDepartureStations(
       { getters, commit },
       parameters: APIv2QueryParams = {
