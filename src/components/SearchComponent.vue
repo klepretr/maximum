@@ -72,7 +72,7 @@
               <option
                 v-for="station in arrivalStationsFavorites"
                 v-bind:key="station.name"
-                :value="station.name"
+                :value="station"
               >
                 {{ titleCaseGare(station.name) }}
               </option>
@@ -80,7 +80,7 @@
             <option
               v-for="station in arrivalStationsNotFavorite"
               v-bind:key="station.name"
-              :value="station.name"
+              :value="station"
             >
               {{ titleCaseGare(station.name) }}
             </option>
@@ -174,7 +174,7 @@ import {
   humanizeDate,
   humanizeDateDiff,
 } from "../utils";
-import { APIv2QueryParams, Journey, UiJourney } from "@/models";
+import { APIv2QueryParams, IAPIExplorerRequest, Journey, UiJourney } from "@/models";
 import JourneyElement from "./JourneyElement.vue";
 
 export default defineComponent({
@@ -261,16 +261,10 @@ export default defineComponent({
     onClickSearch() {
       this.isSearchLoading = true;
       this.isSearchReady = false;
-      const refine = [`origine:${this.departure.name}`];
-      if (this.arrival) {
-        refine.push(`destination:${this.arrival}`);
-      }
-      const parameters: APIv2QueryParams = {
-        limit: 100,
-        offset: 0,
-        where: `date >= date'${this.from_date}'`,
-        order_by: "date asc, heure_depart asc",
-        refine,
+      const parameters: IAPIExplorerRequest = {
+        departureDateTime: new Date(this.from_date),
+        destination: this.arrival.iata,
+        origin: this.departure.iata,
       };
       store.dispatch("getJourneys", parameters).then(() => {
         this.isSearchLoading = false;
@@ -292,7 +286,7 @@ export default defineComponent({
             : "getJourneys"
         ];
       results.forEach((journey) => {
-        const date = journey.date.toString();
+        const date = journey.departureDate.toString();
         if (!(date in groupByDays)) {
           groupByDays[date] = [];
         }

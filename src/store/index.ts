@@ -5,6 +5,8 @@ import {
   AggregationsResponse,
   APIv2QueryParams,
   DatasetInfoResponse,
+  IAPIExplorerRequest,
+  IAPIExplorerResponse,
   Journey,
   RecordsResponse,
 } from "@/models";
@@ -12,6 +14,9 @@ import QueryString from "qs";
 import dayjs from "dayjs";
 
 type APIv2Endpoints = "aggregates" | "records";
+
+const BASE_URL_EXPLORER = "https://www.maxjeune-tgvinoui.sncf/api/public/refdata/";
+const DATASET_URL_EXPLORER = BASE_URL_EXPLORER + "search-freeplaces-proposals";
 
 const BASE_URL = "https://ressources.data.sncf.com/api/";
 const DATASET_URL_V2 = (
@@ -93,12 +98,12 @@ const extractGaresFromAggregations = (data: AggregationsResponse): StationDesc[]
   });
 };
 
-const extractJourneysFromRecord = (data: RecordsResponse): Journey[] => {
-  return data.records.map((r) => {
+const extractJourneysFromResponse = (data: IAPIExplorerResponse): Journey[] => {
+  return data.proposals.map((r) => {
     return {
-      ...r.record.fields,
-      available: r.record.fields.od_happy_card === "OUI" ? true : false,
-      id: `${r.record.fields.train_no}${r.record.fields.date}${r.record.fields.origine_iata}`,
+      ...r,
+      available: r.freePlaces > 0,
+      id: `${r.trainNumber}${r.departureDate}${r.origin.rrCode}`,
     };
   });
 };
@@ -309,18 +314,18 @@ export default createStore<State>({
     },
     getJourneys(
       { commit },
-      parameters: APIv2QueryParams = DEFAULT_V2_QUERY_PARAM
+      request: IAPIExplorerRequest
     ) {
       return xios
-        .get(DATASET_URL_V2(DATASET_IDENTIFIER, "records"), {
-          params: { ...DEFAULT_V2_QUERY_PARAM, ...parameters },
-        })
+        .post(DATASET_URL_EXPLORER, request)
         .then((res) =>
-          commit("setJourneys", extractJourneysFromRecord(res.data))
+          commit("setJourneys", extractJourneysFromResponse(res.data))
         )
         .catch((err) => {
           if (!err.status) {
             // Network error
+          } else {
+            commit("setJourneys", []);
           }
         });
     },

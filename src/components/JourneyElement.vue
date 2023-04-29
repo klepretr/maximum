@@ -3,7 +3,7 @@
     <div class="custom-grid">
       <div class="station">
         <span class="station_label">de</span>
-        <span class="station_name">{{ titleCaseGare(journey.origine) }}</span>
+        <span class="station_name">{{ titleCaseGare(journey.origin.label) }}</span>
       </div>
       <div></div>
       <div class="ta-e mr-3">
@@ -35,16 +35,16 @@
       </div-->
       <div class="spliter"></div>
       <div class="ta-e timesheet merge-col-ends">
-        {{ journey.heure_depart }} ➔ {{ journey.heure_arrivee }}
+        {{ humanizeDatetime(journey.departureDate) }} ➔ {{ humanizeDatetime(journey.arrivalDate) }}
       </div>
       <div class="station">
         <span class="station_label">vers</span>
         <span class="station_name">{{
-          titleCaseGare(journey.destination)
+          titleCaseGare(journey.destination.label)
         }}</span>
       </div>
       <div class="ta-e number merge-col-ends">
-        train n°<span style="font-weight: 600">{{ journey.train_no }}</span>
+        {{ journey.trainEquipment }} n°<span style="font-weight: 600">{{ journey.trainNumber }}</span>
       </div>
     </div>
     <blockquote class="ta-l" v-if="moreInfo">
@@ -66,7 +66,7 @@
 <script lang="ts">
 import { UiJourney } from "@/models";
 import { defineComponent } from "@vue/runtime-core";
-import { titleCaseGare } from "../utils";
+import { humanizeDatetime, titleCaseGare } from "../utils";
 
 export default defineComponent({
   name: "JourneyElement",
@@ -83,6 +83,9 @@ export default defineComponent({
     titleCaseGare: function () {
       return titleCaseGare;
     },
+    humanizeDatetime: function() {
+      return humanizeDatetime;
+    }
   },
   methods: {
     onChangeFavoris(journey: UiJourney) {
