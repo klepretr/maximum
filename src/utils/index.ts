@@ -13,6 +13,10 @@ export const titleCaseGare = (value: string): string => {
   return value
     .split(" ")
     .map((word: string, index: number) => {
+      if (!word) {
+        return "";
+      }
+
       const wordLower = word.toLowerCase();
       const finded = ESCAPE_CAPITALIZE_WORDS.find((escape) => {
         return escape.value.toLowerCase() === wordLower;
