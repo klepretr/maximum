@@ -12,7 +12,9 @@ type Field =
   | "origine_iata"
   | "od_happy_card"
   | "axe"
-  | "code_equip";
+  | "code_equip"
+  | "origine,origine_iata"
+  | "destination,destination_iata";
 type HappyCardAvailability = "OUI" | "NON";
 type ResponseFormats = "json";
 
@@ -88,7 +90,9 @@ export interface LinksResponse {
 
 export interface AggregationsValueResponse {
   origine?: string;
+  origine_iata?: string;
   destination?: string;
+  destination_iata?: string;
 }
 
 export interface AggregationsResponse {

@@ -48,27 +48,48 @@ export const ESCAPE_CAPITALIZE_WORDS = [
   { value: "les", force: false },
 ];
 
+interface StationDesc {
+  name: string;
+  iata: string
+}
+
 const mergeStationsAndFavorites = (
-  stations: string[],
-  favorites: string[]
+  stations: StationDesc[],
+  favorites: StationDesc[]
 ): UIStation[] => {
   return stations.map((station) => {
     return {
-      name: station,
-      favorite: favorites.includes(station),
+      ...station,
+      favorite: !!favorites.find(fav => fav.iata == station.iata),
     };
   });
 };
 
-const saveFavorites = (favoriteStations: string[]) => {
+const saveFavorites = (favoriteStations: StationDesc[]) => {
   if (localStorage) {
     localStorage.setItem("favoriteStations", JSON.stringify(favoriteStations));
   }
 };
 
-const extractGaresFromAggregations = (data: AggregationsResponse): string[] => {
+const extractGaresFromAggregations = (data: AggregationsResponse): StationDesc[] => {
   return data.aggregations.map((aggr) => {
-    return aggr.origine || aggr.destination || "Station Name not found";
+    if (aggr.origine && aggr.origine_iata) {
+      return {
+        iata: aggr.origine_iata!,
+        name: aggr.origine!
+      };
+    }
+    if (aggr.destination && aggr.destination_iata) {
+      return {
+        iata: aggr.destination_iata,
+        name: aggr.destination
+      };
+    }
+
+    return {
+      iata: "XXXX",
+      name: "Station Not Found"
+    }
   });
 };
 
@@ -88,15 +109,14 @@ const extractLastUpdateFromDatasetInfo = (
   return dayjs(data?.dataset?.metas?.default?.data_processed) || null;
 };
 
-export interface UIStation {
-  name: string;
+export interface UIStation extends StationDesc {
   favorite: boolean;
 }
 
 export interface State {
   departureStations: UIStation[];
   arrivalStations: UIStation[];
-  favoriteStations: string[];
+  favoriteStations: StationDesc[];
   journeys: Journey[];
   lastUpdateDataset: dayjs.Dayjs | null;
 }
@@ -198,7 +218,7 @@ export default createStore<State>({
       { getters, commit },
       parameters: APIv2QueryParams = {
         ...DEFAULT_V2_QUERY_PARAM,
-        group_by: "origine",
+        group_by: "origine,origine_iata",
       }
     ) {
       return xios
@@ -249,7 +269,7 @@ export default createStore<State>({
           params: {
             ...DEFAULT_V2_QUERY_PARAM,
             ...parameters.query,
-            group_by: "destination",
+            group_by: "destination,destination_iata",
             refine: `origine:${parameters.departure}`,
           },
         })
