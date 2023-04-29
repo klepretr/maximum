@@ -191,8 +191,15 @@ export default defineComponent({
     store.dispatch("getLastUpdateDataset");
   },
   data() {
-    const departure: { name: string; favorite: boolean } = {
+    const departure: UIStation = {
       name: "",
+      iata: "",
+      favorite: false,
+    };
+
+    const arrival: UIStation = {
+      name: "",
+      iata: "",
       favorite: false,
     };
 
@@ -205,7 +212,7 @@ export default defineComponent({
       isSearchReady: false,
       showOnlyAvailableJourneys: true,
       departure,
-      arrival: "",
+      arrival,
       from_date: formatDate(new Date()),
     };
   },
@@ -233,7 +240,11 @@ export default defineComponent({
   methods: {
     onChangeDeparture() {
       this.isArrivalReady = false;
-      this.arrival = "";
+      this.arrival = {
+        name: "",
+        iata: "",
+        favorite: false
+      };
       this.isSearchReadyToStart =
         this.departure.name != null && this.departure.name.trim() !== "";
       this.isArrivalSelected = false;
@@ -245,7 +256,7 @@ export default defineComponent({
     },
     onChangeArrival() {
       this.isArrivalSelected =
-        this.arrival != null && this.arrival.trim() !== "";
+        this.arrival != null && this.arrival?.name?.trim() !== "";
     },
     onClickSearch() {
       this.isSearchLoading = true;
@@ -292,9 +303,9 @@ export default defineComponent({
     handleFavorite: (station: UIStation) => {
       station.favorite = !station.favorite;
       if (station.favorite) {
-        store.commit("addFavoriteStations", station.name);
+        store.commit("addFavoriteStations", station);
       } else {
-        store.commit("removeFavoriteStations", station.name);
+        store.commit("removeFavoriteStations", station);
       }
     },
   },
