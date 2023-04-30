@@ -15,7 +15,7 @@ import dayjs from "dayjs";
 type APIv2Endpoints = "aggregates" | "records";
 
 const BASE_URL_EXPLORER =
-  "https://www.maxjeune-tgvinoui.sncf/api/public/refdata/";
+  "https://ar0g2l6n89.execute-api.eu-west-3.amazonaws.com/api/public/refdata/";
 const DATASET_URL_EXPLORER = BASE_URL_EXPLORER + "search-freeplaces-proposals";
 
 const BASE_URL = "https://ressources.data.sncf.com/api/";
@@ -316,7 +316,7 @@ export default createStore<State>({
     },
     getJourneys({ commit }, request: IAPIExplorerRequest) {
       return xios
-        .post(DATASET_URL_EXPLORER, request)
+        .get(DATASET_URL_EXPLORER, {params: {...request}})
         .then((res) =>
           commit("setJourneys", extractJourneysFromResponse(res.data))
         )

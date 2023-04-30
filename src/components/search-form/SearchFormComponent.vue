@@ -128,8 +128,8 @@
       Recherche en cours...
     </article>
     <div v-if="isSearchReady">
-      <fieldset>
-        <label for="switch">
+      <fieldset v-if="false">
+        <label for="switch"> <!-- disabled feature temporary -->
           <input
             type="checkbox"
             id="switch"
