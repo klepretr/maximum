@@ -1,4 +1,4 @@
-import { defineComponent } from "@vue/runtime-core";
+import { defineComponent } from "vue";
 import { humanizeDatetime, titleCaseGare } from "@/utils";
 
 export default defineComponent({
@@ -8,7 +8,6 @@ export default defineComponent({
   },
   data() {
     return {
-      journey: {},
       selected: this.journey?.selected || false,
       moreInfo: false,
     };

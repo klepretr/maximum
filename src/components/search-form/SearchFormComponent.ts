@@ -10,6 +10,7 @@ import {
 } from "@/utils";
 import { IAPIExplorerRequest, Journey, UiJourney } from "@/models";
 import JourneyComponent from "../journey/JourneyComponent.vue";
+import dayjs from "dayjs";
 
 export default defineComponent({
   name: "SearchComponent",
@@ -103,7 +104,7 @@ export default defineComponent({
       store.dispatch("getJourneys", parameters).then(() => {
         this.isSearchLoading = false;
         this.isSearchReady = true;
-        var elem = document.querySelector("#results");
+        const elem = document.querySelector("#results");
         if (elem) {
           elem.scrollIntoView({ behavior: "smooth" });
         }
@@ -120,7 +121,7 @@ export default defineComponent({
             : "getJourneys"
         ];
       results.forEach((journey) => {
-        const date = journey.departureDate.toString();
+        const date = dayjs(journey.departureDate).startOf('day').toString();
         if (!(date in groupByDays)) {
           groupByDays[date] = [];
         }

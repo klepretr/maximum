@@ -8,7 +8,6 @@ import {
   IAPIExplorerRequest,
   IAPIExplorerResponse,
   Journey,
-  RecordsResponse,
 } from "@/models";
 import QueryString from "qs";
 import dayjs from "dayjs";
@@ -80,8 +79,8 @@ const extractGaresFromAggregations = (data: AggregationsResponse): StationDesc[]
   return data.aggregations.map((aggr) => {
     if (aggr.origine && aggr.origine_iata) {
       return {
-        iata: aggr.origine_iata!,
-        name: aggr.origine!
+        iata: aggr.origine_iata,
+        name: aggr.origine
       };
     }
     if (aggr.destination && aggr.destination_iata) {

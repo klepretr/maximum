@@ -1,5 +1,5 @@
 <template>
-  <article :class="{ disable: !journey.available }">
+  <article v-if="journey" :class="{ disable: !journey.available }">
     <div class="custom-grid">
       <div class="station">
         <span class="station_label">de</span>

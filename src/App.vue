@@ -6,7 +6,7 @@
 </template>
 <script>
 import LayoutComponent from "@/components/layout/LayoutComponent.vue";
-import { defineComponent } from "@vue/runtime-core";
+import { defineComponent } from "vue";
 
 export default defineComponent({
   components: {

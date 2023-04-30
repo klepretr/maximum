@@ -154,11 +154,11 @@
         <div class="ml-5 ta-l date" v-if="journeys.length > 0">
           {{ humanizeDate(date) }}
         </div>
-        <JourneyElement
+        <JourneyComponent
           v-for="journey in journeys"
           v-bind:key="journey.id"
           :journey="journey"
-        ></JourneyElement>
+        ></JourneyComponent>
       </section>
     </div>
   </section>
