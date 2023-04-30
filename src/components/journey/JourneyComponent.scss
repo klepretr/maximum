@@ -1,55 +1,55 @@
 article {
-    margin: 15px 0 15px 0;
-    padding: 20px;
-  }
-  
-  fieldset {
-    margin-bottom: 0;
-  }
-  
-  .disable {
-    background-color: #7575753d;
-    opacity: 0.7;
-  }
-  
-  .custom-grid {
-    grid-template-columns: 2fr 1.5em 1fr;
-    grid-template-rows: 1 1.5em 1;
-    display: grid;
-    justify-self: stretch;
-    vertical-align: middle;
-    text-align: left;
-  }
-  
-  .station_label {
-    font-size: 12px;
-  }
-  
-  .station_name {
-    margin-left: 5px;
-    font-weight: 600;
-  }
-  
-  .timesheet {
-    font-weight: 1000;
-  }
-  
-  .merge-col-ends {
-    grid-column-start: 2;
-    grid-column-end: 4;
-  }
-  
-  .number {
-    font-size: 14px;
-    margin-top: 5px;
-  }
-  
-  .spliter {
-    border-left-width: medium;
-    border-left-style: solid;
-    border-left-color: #7575754f;
-  }
-  
-  [data-tooltip] {
-    position: absolute;
-  }
+  margin: 15px 0 15px 0;
+  padding: 20px;
+}
+
+fieldset {
+  margin-bottom: 0;
+}
+
+.disable {
+  background-color: #7575753d;
+  opacity: 0.7;
+}
+
+.custom-grid {
+  grid-template-columns: 2fr 1.5em 1fr;
+  grid-template-rows: 1 1.5em 1;
+  display: grid;
+  justify-self: stretch;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.station_label {
+  font-size: 12px;
+}
+
+.station_name {
+  margin-left: 5px;
+  font-weight: 600;
+}
+
+.timesheet {
+  font-weight: 1000;
+}
+
+.merge-col-ends {
+  grid-column-start: 2;
+  grid-column-end: 4;
+}
+
+.number {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.spliter {
+  border-left-width: medium;
+  border-left-style: solid;
+  border-left-color: #7575754f;
+}
+
+[data-tooltip] {
+  position: absolute;
+}

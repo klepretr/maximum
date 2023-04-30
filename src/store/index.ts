@@ -14,7 +14,8 @@ import dayjs from "dayjs";
 
 type APIv2Endpoints = "aggregates" | "records";
 
-const BASE_URL_EXPLORER = "https://www.maxjeune-tgvinoui.sncf/api/public/refdata/";
+const BASE_URL_EXPLORER =
+  "https://www.maxjeune-tgvinoui.sncf/api/public/refdata/";
 const DATASET_URL_EXPLORER = BASE_URL_EXPLORER + "search-freeplaces-proposals";
 
 const BASE_URL = "https://ressources.data.sncf.com/api/";
@@ -54,7 +55,7 @@ export const ESCAPE_CAPITALIZE_WORDS = [
 
 interface StationDesc {
   name: string;
-  iata: string
+  iata: string;
 }
 
 const mergeStationsAndFavorites = (
@@ -64,7 +65,7 @@ const mergeStationsAndFavorites = (
   return stations.map((station) => {
     return {
       ...station,
-      favorite: !!favorites.find(fav => fav.iata == station.iata),
+      favorite: !!favorites.find((fav) => fav.iata == station.iata),
     };
   });
 };
@@ -75,25 +76,27 @@ const saveFavorites = (favoriteStations: StationDesc[]) => {
   }
 };
 
-const extractGaresFromAggregations = (data: AggregationsResponse): StationDesc[] => {
+const extractGaresFromAggregations = (
+  data: AggregationsResponse
+): StationDesc[] => {
   return data.aggregations.map((aggr) => {
     if (aggr.origine && aggr.origine_iata) {
       return {
         iata: aggr.origine_iata,
-        name: aggr.origine
+        name: aggr.origine,
       };
     }
     if (aggr.destination && aggr.destination_iata) {
       return {
         iata: aggr.destination_iata,
-        name: aggr.destination
+        name: aggr.destination,
       };
     }
 
     return {
       iata: "XXXX",
-      name: "Station Not Found"
-    }
+      name: "Station Not Found",
+    };
   });
 };
 
@@ -311,10 +314,7 @@ export default createStore<State>({
       }
       commit("setFavoriteStations", []);
     },
-    getJourneys(
-      { commit },
-      request: IAPIExplorerRequest
-    ) {
+    getJourneys({ commit }, request: IAPIExplorerRequest) {
       return xios
         .post(DATASET_URL_EXPLORER, request)
         .then((res) =>

@@ -1,4 +1,3 @@
-
 import { defineComponent } from "vue";
 import { mapGetters } from "vuex";
 import store, { UIStation } from "@/store";
@@ -78,7 +77,7 @@ export default defineComponent({
       this.arrival = {
         name: "",
         iata: "",
-        favorite: false
+        favorite: false,
       };
       this.isSearchReadyToStart =
         this.departure.name != null && this.departure.name.trim() !== "";
@@ -121,7 +120,7 @@ export default defineComponent({
             : "getJourneys"
         ];
       results.forEach((journey) => {
-        const date = dayjs(journey.departureDate).startOf('day').toString();
+        const date = dayjs(journey.departureDate).startOf("day").toString();
         if (!(date in groupByDays)) {
           groupByDays[date] = [];
         }

@@ -3,7 +3,9 @@
     <div class="custom-grid">
       <div class="station">
         <span class="station_label">de</span>
-        <span class="station_name">{{ titleCaseGare(journey.origin.label) }}</span>
+        <span class="station_name">{{
+          titleCaseGare(journey.origin.label)
+        }}</span>
       </div>
       <div></div>
       <div class="ta-e mr-3">
@@ -20,7 +22,8 @@
       </div>
       <div class="spliter"></div>
       <div class="ta-e timesheet merge-col-ends">
-        {{ humanizeDatetime(journey.departureDate) }} ➔ {{ humanizeDatetime(journey.arrivalDate) }}
+        {{ humanizeDatetime(journey.departureDate) }} ➔
+        {{ humanizeDatetime(journey.arrivalDate) }}
       </div>
       <div class="station">
         <span class="station_label">vers</span>
@@ -29,7 +32,9 @@
         }}</span>
       </div>
       <div class="ta-e number merge-col-ends">
-        {{ journey.trainEquipment }} n°<span style="font-weight: 600">{{ journey.trainNumber }}</span>
+        {{ journey.trainEquipment }} n°<span style="font-weight: 600">{{
+          journey.trainNumber
+        }}</span>
       </div>
     </div>
     <blockquote class="ta-l" v-if="moreInfo">
