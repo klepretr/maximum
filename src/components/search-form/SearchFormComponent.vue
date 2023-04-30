@@ -72,7 +72,7 @@
               <option
                 v-for="station in arrivalStationsFavorites"
                 v-bind:key="station.name"
-                :value="station.name"
+                :value="station"
               >
                 {{ titleCaseGare(station.name) }}
               </option>
@@ -80,7 +80,7 @@
             <option
               v-for="station in arrivalStationsNotFavorite"
               v-bind:key="station.name"
-              :value="station.name"
+              :value="station"
             >
               {{ titleCaseGare(station.name) }}
             </option>
@@ -128,8 +128,8 @@
       Recherche en cours...
     </article>
     <div v-if="isSearchReady">
-      <fieldset>
-        <label for="switch">
+      <fieldset v-if="false">
+        <label for="switch"> <!-- disabled feature temporary -->
           <input
             type="checkbox"
             id="switch"
@@ -154,208 +154,17 @@
         <div class="ml-5 ta-l date" v-if="journeys.length > 0">
           {{ humanizeDate(date) }}
         </div>
-        <JourneyElement
+        <JourneyComponent
           v-for="journey in journeys"
           v-bind:key="journey.id"
           :journey="journey"
-        ></JourneyElement>
+        ></JourneyComponent>
       </section>
     </div>
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters } from "vuex";
-import store, { UIStation } from "../store";
-import {
-  titleCaseGare,
-  formatDate,
-  humanizeDate,
-  humanizeDateDiff,
-} from "../utils";
-import { APIv2QueryParams, Journey, UiJourney } from "@/models";
-import JourneyElement from "./JourneyElement.vue";
-
-export default defineComponent({
-  name: "SearchComponent",
-  components: {
-    JourneyElement,
-  },
-  mounted() {
-    store.dispatch("getDepartureStations").then(() => {
-      this.isDepartureReady = true;
-    });
-
-    store.dispatch("getFavoriteStations");
-    store.dispatch("getLastUpdateDataset");
-  },
-  data() {
-    const departure: UIStation = {
-      name: "",
-      iata: "",
-      favorite: false,
-    };
-
-    const arrival: UIStation = {
-      name: "",
-      iata: "",
-      favorite: false,
-    };
-
-    return {
-      isDepartureReady: false,
-      isArrivalReady: false,
-      isArrivalSelected: false,
-      isSearchLoading: false,
-      isSearchReadyToStart: false,
-      isSearchReady: false,
-      showOnlyAvailableJourneys: true,
-      departure,
-      arrival,
-      from_date: formatDate(new Date()),
-    };
-  },
-  computed: {
-    ...mapGetters({
-      departureStations: "getDepartureStations",
-      departureStationsFavorites: "getDepartureStationsFavorites",
-      departureStationsNotFavorite: "getDepartureStationsNotFavorite",
-      arrivalStations: "getArrivalStations",
-      arrivalStationsFavorites: "getArrivalStationsFavorites",
-      arrivalStationsNotFavorite: "getArrivalStationsNotFavorite",
-      journeys: "getJourneys",
-      lastUpdateDataset: "getLastUpdateDataset",
-    }),
-    titleCaseGare: function () {
-      return titleCaseGare;
-    },
-    humanizeDate: function () {
-      return humanizeDate;
-    },
-    humanizeDateDiff: function () {
-      return humanizeDateDiff;
-    },
-  },
-  methods: {
-    onChangeDeparture() {
-      this.isArrivalReady = false;
-      this.arrival = {
-        name: "",
-        iata: "",
-        favorite: false
-      };
-      this.isSearchReadyToStart =
-        this.departure.name != null && this.departure.name.trim() !== "";
-      this.isArrivalSelected = false;
-      store
-        .dispatch("getArrivalStations", { departure: this.departure.name })
-        .then(() => {
-          this.isArrivalReady = true;
-        });
-    },
-    onChangeArrival() {
-      this.isArrivalSelected =
-        this.arrival != null && this.arrival?.name?.trim() !== "";
-    },
-    onClickSearch() {
-      this.isSearchLoading = true;
-      this.isSearchReady = false;
-      const refine = [`origine:${this.departure.name}`];
-      if (this.arrival) {
-        refine.push(`destination:${this.arrival}`);
-      }
-      const parameters: APIv2QueryParams = {
-        limit: 100,
-        offset: 0,
-        where: `date >= date'${this.from_date}'`,
-        order_by: "date asc, heure_depart asc",
-        refine,
-      };
-      store.dispatch("getJourneys", parameters).then(() => {
-        this.isSearchLoading = false;
-        this.isSearchReady = true;
-        var elem = document.querySelector("#results");
-        if (elem) {
-          elem.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-    },
-    journeysFiltered: (
-      showOnlyAvailableJourneys: boolean
-    ): { [key: string]: UiJourney[] } => {
-      const groupByDays: { [key: string]: UiJourney[] } = {};
-      const results: Journey[] =
-        store.getters[
-          showOnlyAvailableJourneys
-            ? "getJourneysOnlyAvailables"
-            : "getJourneys"
-        ];
-      results.forEach((journey) => {
-        const date = journey.date.toString();
-        if (!(date in groupByDays)) {
-          groupByDays[date] = [];
-        }
-        groupByDays[date].push({ ...journey, selected: false });
-      });
-      return groupByDays;
-    },
-    handleFavorite: (station: UIStation) => {
-      station.favorite = !station.favorite;
-      if (station.favorite) {
-        store.commit("addFavoriteStations", station);
-      } else {
-        store.commit("removeFavoriteStations", station);
-      }
-    },
-  },
-});
-</script>
+<script lang="ts" src="./SearchFormComponent.ts" />
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-label {
-  text-align: left;
-}
-
-.departure-grid {
-  grid-template-columns: 10fr 1fr;
-  grid-column-gap: 0.5em;
-  display: grid;
-}
-
-.selected .star {
-  fill: #f3e745;
-  stroke: #374956;
-}
-
-#favorite_btn {
-  margin-top: 0.25em;
-}
-
-.row-one-grid {
-  @media (min-width: 50em) {
-    grid-template-columns: 1fr 1fr;
-    grid-column-gap: 1em;
-  }
-  display: grid;
-}
-
-.row-two-grid {
-  @media (min-width: 50em) {
-    grid-template-columns: 1.2fr 1fr;
-    grid-column-gap: 1em;
-  }
-  display: grid;
-}
-
-.custom-label {
-  @media (max-width: 50em) {
-    margin-bottom: 1rem;
-  }
-}
-
-.date {
-  font-weight: 600;
-}
-</style>
+<style scoped lang="scss" src="./SearchFormComponent.scss" />

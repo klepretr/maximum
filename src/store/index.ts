@@ -5,13 +5,18 @@ import {
   AggregationsResponse,
   APIv2QueryParams,
   DatasetInfoResponse,
+  IAPIExplorerRequest,
+  IAPIExplorerResponse,
   Journey,
-  RecordsResponse,
 } from "@/models";
 import QueryString from "qs";
 import dayjs from "dayjs";
 
 type APIv2Endpoints = "aggregates" | "records";
+
+const BASE_URL_EXPLORER =
+  "https://ar0g2l6n89.execute-api.eu-west-3.amazonaws.com/api/public/refdata/";
+const DATASET_URL_EXPLORER = BASE_URL_EXPLORER + "search-freeplaces-proposals";
 
 const BASE_URL = "https://ressources.data.sncf.com/api/";
 const DATASET_URL_V2 = (
@@ -50,7 +55,7 @@ export const ESCAPE_CAPITALIZE_WORDS = [
 
 interface StationDesc {
   name: string;
-  iata: string
+  iata: string;
 }
 
 const mergeStationsAndFavorites = (
@@ -60,7 +65,7 @@ const mergeStationsAndFavorites = (
   return stations.map((station) => {
     return {
       ...station,
-      favorite: !!favorites.find(fav => fav.iata == station.iata),
+      favorite: !!favorites.find((fav) => fav.iata == station.iata),
     };
   });
 };
@@ -71,34 +76,36 @@ const saveFavorites = (favoriteStations: StationDesc[]) => {
   }
 };
 
-const extractGaresFromAggregations = (data: AggregationsResponse): StationDesc[] => {
+const extractGaresFromAggregations = (
+  data: AggregationsResponse
+): StationDesc[] => {
   return data.aggregations.map((aggr) => {
     if (aggr.origine && aggr.origine_iata) {
       return {
-        iata: aggr.origine_iata!,
-        name: aggr.origine!
+        iata: aggr.origine_iata,
+        name: aggr.origine,
       };
     }
     if (aggr.destination && aggr.destination_iata) {
       return {
         iata: aggr.destination_iata,
-        name: aggr.destination
+        name: aggr.destination,
       };
     }
 
     return {
       iata: "XXXX",
-      name: "Station Not Found"
-    }
+      name: "Station Not Found",
+    };
   });
 };
 
-const extractJourneysFromRecord = (data: RecordsResponse): Journey[] => {
-  return data.records.map((r) => {
+const extractJourneysFromResponse = (data: IAPIExplorerResponse): Journey[] => {
+  return data.proposals.map((r) => {
     return {
-      ...r.record.fields,
-      available: r.record.fields.od_happy_card === "OUI" ? true : false,
-      id: `${r.record.fields.train_no}${r.record.fields.date}${r.record.fields.origine_iata}`,
+      ...r,
+      available: r.freePlaces > 0,
+      id: `${r.trainNumber}${r.departureDate}${r.origin.rrCode}`,
     };
   });
 };
@@ -307,20 +314,17 @@ export default createStore<State>({
       }
       commit("setFavoriteStations", []);
     },
-    getJourneys(
-      { commit },
-      parameters: APIv2QueryParams = DEFAULT_V2_QUERY_PARAM
-    ) {
+    getJourneys({ commit }, request: IAPIExplorerRequest) {
       return xios
-        .get(DATASET_URL_V2(DATASET_IDENTIFIER, "records"), {
-          params: { ...DEFAULT_V2_QUERY_PARAM, ...parameters },
-        })
+        .get(DATASET_URL_EXPLORER, {params: {...request}})
         .then((res) =>
-          commit("setJourneys", extractJourneysFromRecord(res.data))
+          commit("setJourneys", extractJourneysFromResponse(res.data))
         )
         .catch((err) => {
           if (!err.status) {
             // Network error
+          } else {
+            commit("setJourneys", []);
           }
         });
     },

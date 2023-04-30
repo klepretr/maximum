@@ -44,6 +44,12 @@ export interface APIv1QueryParams {
   facet?: Facet[];
 }
 
+export interface IAPIExplorerRequest {
+  departureDateTime: Date;
+  destination: string;
+  origin: string;
+}
+
 export interface Station {
   id: string;
   label: string;
@@ -53,9 +59,24 @@ export interface UiJourney extends Journey {
   selected: boolean;
 }
 
-export interface Journey extends IAPIJourney {
+export interface Journey extends IAPIExplorerJourney {
   id: string;
   available: boolean;
+}
+
+export interface IAPIExplorerJourneyStation {
+  label: string;
+  rrCode: string;
+}
+
+export interface IAPIExplorerJourney {
+  origin: IAPIExplorerJourneyStation;
+  destination: IAPIExplorerJourneyStation;
+  departureDate: Date;
+  arrivalDate: Date;
+  freePlaces: number;
+  trainNumber: string;
+  trainEquipment: string;
 }
 
 export interface IAPIJourney {
@@ -136,4 +157,11 @@ export interface RecordsResponse {
   total_count: number;
   links: IAPILink[];
   records: IAPIRecordContainer[];
+}
+
+export interface IAPIExplorerResponse {
+  updatedAt: Date;
+  expiresAt: Date;
+  freePlacesRatio: number;
+  proposals: IAPIExplorerJourney[];
 }

@@ -1,0 +1,44 @@
+label {
+  text-align: left;
+}
+
+.departure-grid {
+  grid-template-columns: 10fr 1fr;
+  grid-column-gap: 0.5em;
+  display: grid;
+}
+
+.selected .star {
+  fill: #f3e745;
+  stroke: #374956;
+}
+
+#favorite_btn {
+  margin-top: 0.25em;
+}
+
+.row-one-grid {
+  @media (min-width: 50em) {
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 1em;
+  }
+  display: grid;
+}
+
+.row-two-grid {
+  @media (min-width: 50em) {
+    grid-template-columns: 1.2fr 1fr;
+    grid-column-gap: 1em;
+  }
+  display: grid;
+}
+
+.custom-label {
+  @media (max-width: 50em) {
+    margin-bottom: 1rem;
+  }
+}
+
+.date {
+  font-weight: 600;
+}

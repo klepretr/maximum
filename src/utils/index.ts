@@ -54,6 +54,10 @@ const monthOfYear = [
   "décembre",
 ];
 
+export const humanizeDatetime = (date: Date): string => {
+  return dayjs(date).format("HH:mm");
+};
+
 export const humanizeDate = (date: Date): string => {
   const now = dayjs();
   const timeObj = dayjs(date);

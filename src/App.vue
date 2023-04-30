@@ -1,16 +1,16 @@
 <template>
-  <Banner appName="Maximum" />
+  <layout-component appName="Maximum" />
   <main class="container ml-5 mr-5">
     <router-view />
   </main>
 </template>
 <script>
-import Banner from "@/components/Banner.vue";
-import { defineComponent } from "@vue/runtime-core";
+import LayoutComponent from "@/components/layout/LayoutComponent.vue";
+import { defineComponent } from "vue";
 
 export default defineComponent({
   components: {
-    Banner,
+    LayoutComponent,
   },
 });
 </script>
