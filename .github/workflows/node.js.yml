@@ -48,6 +48,7 @@ jobs:
 
     # Specify runner + deployment step
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
