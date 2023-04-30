@@ -6,10 +6,10 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import SearchComponent from "@/components/SearchComponent.vue";
+import SearchComponent from "@/components/search-form/SearchFormComponent.vue";
 
 export default defineComponent({
-  name: "Home",
+  name: "HomeView",
   components: {
     SearchComponent,
   },
