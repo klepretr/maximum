@@ -1,11 +1,11 @@
 <template>
   <section class="mb-3">
-    <h4 class="ta-l">Recherche de trajets</h4>
+    <h4 class="ta-l">{{ $t("search.title") }}</h4>
     <form @submit="$event.preventDefault()">
       <div class="row-one-grid">
         <div class="departure-grid">
           <label for="from_stations">
-            Gare de départ
+            {{ $t("search.station.departure") }}
             <select
               @change="onChangeDeparture"
               :disabled="!isDepartureReady"
@@ -13,7 +13,9 @@
               v-model="departure"
               id="from_stations"
             >
-              <option value="" disabled selected>Départ...</option>
+              <option value="" disabled selected>
+                {{ $t("search.station.departureOption") }}
+              </option>
               <optgroup v-if="departureStationsFavorites.length > 0">
                 <option
                   v-for="station in departureStationsFavorites"
@@ -60,14 +62,16 @@
           </label>
         </div>
         <label for="to_stations">
-          Gare d'arrivée
+          {{ $t("search.station.arrival") }}
           <select
             @change="onChangeArrival()"
             :disabled="!isArrivalReady"
             v-model="arrival"
             id="to_stations"
           >
-            <option value="" disabled selected>Arrivée...</option>
+            <option value="" disabled selected>
+              {{ $t("search.station.arrivalOption") }}
+            </option>
             <optgroup v-if="arrivalStationsFavorites.length > 0">
               <option
                 v-for="station in arrivalStationsFavorites"
@@ -89,7 +93,7 @@
       </div>
       <div class="row-two-grid mt-5">
         <label for="date">
-          A partir du
+          {{ $t("search.fromAt") }}
           <input
             type="date"
             id="date"
@@ -100,13 +104,16 @@
         </label>
         <label>
           <small class="ta-l di-b custom-label">
-            dernière mise à jour des trajets :
+            {{ $t("search.lastUpdate.label") }}
             <em
               :data-tooltip="
                 lastUpdateDataset ? lastUpdateDataset.format('LLL') : null
               "
             >
-              {{ humanizeDateDiff(lastUpdateDataset) || "indisponible" }}
+              {{
+                humanizeDateDiff(lastUpdateDataset) ||
+                $t("search.lastUpdate.notAvailable")
+              }}
             </em>
           </small>
           <button
@@ -115,7 +122,7 @@
             @click="onClickSearch"
             class="mt-1"
           >
-            {{ isSearchLoading ? "" : "Rechercher..." }}
+            {{ isSearchLoading ? "" : $t("search.station.startSearch") }}
           </button>
         </label>
       </div>
@@ -125,11 +132,12 @@
   <section id="results">
     <article v-if="isSearchLoading">
       <progress></progress>
-      Recherche en cours...
+      {{ $t("search.station.startSearch") }}
     </article>
     <div v-if="isSearchReady">
       <fieldset v-if="false">
-        <label for="switch"> <!-- disabled feature temporary -->
+        <label for="switch">
+          <!-- disabled feature temporary -->
           <input
             type="checkbox"
             id="switch"
@@ -137,7 +145,7 @@
             role="switch"
             v-model="showOnlyAvailableJourneys"
           />
-          Cacher les trajets indisponibles
+          {{ $t("result.showNotAvailableJourneys") }}
         </label>
       </fieldset>
       <section
@@ -145,7 +153,7 @@
           Object.keys(journeysFiltered(showOnlyAvailableJourneys)).length === 0
         "
       >
-        <article>Pas d'itinéraire disponible</article>
+        <article>{{ $t("result.noJourneyAvailable") }}</article>
       </section>
       <section
         v-for="(journeys, date) in journeysFiltered(showOnlyAvailableJourneys)"

@@ -316,7 +316,7 @@ export default createStore<State>({
     },
     getJourneys({ commit }, request: IAPIExplorerRequest) {
       return xios
-        .get(DATASET_URL_EXPLORER, {params: {...request}})
+        .get(DATASET_URL_EXPLORER, { params: { ...request } })
         .then((res) =>
           commit("setJourneys", extractJourneysFromResponse(res.data))
         )

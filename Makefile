@@ -3,6 +3,7 @@ install:
 
 lint:
 	npm run lint
+	npm run format
 
 build:
 	npm run build

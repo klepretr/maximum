@@ -1,0 +1,34 @@
+{
+  "result": {
+    "available": "disponible",
+    "from": "de",
+    "moreInfo": {
+      "highlight": " peut ne pas être à jour",
+      "prefix": "La disponibilité de ce trajet",
+      "smallLink": "source de données",
+      "smallPrefix": "La",
+      "smallSuffix": "qu'utilise cette application est mise à jour quotidiennement. Veuillez vérifier l'état réel du trajet depuis votre application de réservation.",
+      "suffix": "."
+    },
+    "noJourneyAvailable": "Pas d'itinéraire disponible",
+    "notAvailable": "indisponible",
+    "showNotAvailableJourneys": "Cacher les trajets indisponibles",
+    "to": "vers",
+    "tooltip": { "close": "fermer", "moreInfo": "+ d'infos" }
+  },
+  "search": {
+    "fromAt": "A partir du",
+    "lastUpdate": {
+      "label": "dernière mise à jour des trajets :",
+      "notAvailable": "indisponible"
+    },
+    "station": {
+      "arrival": "Gare d'arrivée",
+      "arrivalOption": "Arrivée...",
+      "departure": "Gare de départ",
+      "departureOption": "Départ...",
+      "startSearch": "Rechercher..."
+    },
+    "title": "Recherche de trajets"
+  }
+}
