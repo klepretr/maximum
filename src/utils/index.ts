@@ -4,10 +4,12 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 
 require("dayjs/locale/fr");
+require("dayjs/locale/en");
 
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.locale("fr");
+dayjs.locale("en");
 
 export const titleCaseGare = (value: string): string => {
   return value

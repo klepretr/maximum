@@ -1,0 +1,34 @@
+{
+  "result": {
+    "available": "available",
+    "from": "from",
+    "moreInfo": {
+      "highlight": " can be outdated",
+      "prefix": "The availability of this journey",
+      "smallLink": "data source",
+      "smallPrefix": "The",
+      "smallSuffix": "used in this application is updated only one time by day.",
+      "suffix": "."
+    },
+    "noJourneyAvailable": "No journey available",
+    "notAvailable": "not available",
+    "showNotAvailableJourneys": "Hide not availables journeys",
+    "to": "to",
+    "tooltip": { "close": "close", "moreInfo": "+ infos" }
+  },
+  "search": {
+    "fromAt": "From date",
+    "lastUpdate": {
+      "label": "last update of dataset:",
+      "notAvailable": "not available"
+    },
+    "station": {
+      "arrival": "Arrival station",
+      "arrivalOption": "To...",
+      "departure": "Departure station",
+      "departureOption": "From...",
+      "startSearch": "Search..."
+    },
+    "title": "Search journey"
+  }
+}
