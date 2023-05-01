@@ -101,6 +101,10 @@ const extractGaresFromAggregations = (
 };
 
 const extractJourneysFromResponse = (data: IAPIExplorerResponse): Journey[] => {
+  if(!data.proposals) {
+    return [];
+  }
+
   return data.proposals.map((r) => {
     return {
       ...r,
